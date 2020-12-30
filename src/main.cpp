@@ -1,21 +1,65 @@
 #include <iostream>
+#include <sstream>
 #include <list>
 #include <utility>
 
-int main(int, char **)
+namespace
+{
+    void check(ssize_t a, ssize_t b, ssize_t m)
+    {
+        if (m <= 0)
+        {
+            throw std::invalid_argument("Wrong modulo");
+        }
+
+        ssize_t const value = (4 * a * a * a) + (27 * b * b);
+
+        ssize_t const r = value % m;
+
+        if (r == 0)
+        {
+            throw std::invalid_argument("Wrong a or b");
+        }
+    }
+}
+
+int main(int argc, char *argv[])
 try
 {
-    size_t const p = 23;
-
-    std::list<std::pair<size_t, size_t>> result;
-
-    for (size_t x = 0; x < p; ++x)
+    if (argc != 4)
     {
-        size_t const y1 = (x * x * x - x) % p;
+        throw std::invalid_argument("Usage: prime-number a b");
+    }
 
-        for (size_t y = 0; y < p; ++y)
+    ssize_t p = 0;
+    {
+        std::stringstream ss { argv[1] };
+        ss >> p;
+    }
+
+    ssize_t a = 0;
+    {
+        std::stringstream ss { argv[2] };
+        ss >> a;
+    }
+
+    ssize_t b = 0;
+    {
+        std::stringstream ss { argv[3] };
+        ss >> b;
+    }
+
+    check(a, b, p);
+
+    std::list<std::pair<ssize_t, ssize_t>> result;
+
+    for (ssize_t x = 0; x < p; ++x)
+    {
+        ssize_t const y1 = ((x * x * x) + (a * x) + b) % p;
+
+        for (ssize_t y = 0; y < p; ++y)
         {
-            size_t const y2 = (y * y) % p;
+            ssize_t const y2 = (y * y) % p;
 
             if (y1 == y2)
             {
@@ -24,15 +68,22 @@ try
         }
     }
 
-    for (size_t &point: result)
+    for (auto &point: result)
     {
-        size_t &x = point.first;
-        size_t &y = point.second;
+        ssize_t &x = point.first;
+        ssize_t &y = point.second;
 
         std::cout << "(" << x << ", " << y << ")," << std::endl;
     }
 
+    std::cout << "Total: " << result.size() << " points." << std::endl;
+
     return EXIT_SUCCESS;
+}
+catch (std::exception &exc)
+{
+    std::cerr << "Exception: " << exc.what() << std::endl;
+    return EXIT_FAILURE;
 }
 catch (...)
 {
